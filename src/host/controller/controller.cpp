@@ -114,33 +114,66 @@ namespace intercept {
                     pointers << "unary_function " << pointer_name << ";\n";
                     //__sqf::unary_random_scalar_raw = (unary_function)functions.get_unary_function_typed("random", "SCALAR");
                     assignments << "__sqf::" << pointer_name << " = " << "(unary_function)functions.get_unary_function_typed(\"" << op_name << "\", \"" << first_arg_type << "\");\n";
-                    /*
+
                     std::string pretty_name(op.name);
                     std::regex to_snake = std::regex("([a-z])([A-Z0-9])");
                     std::string snake_name = std::regex_replace(pretty_name, to_snake, "$1_$2");
                     std::transform(snake_name.begin(), snake_name.end(), snake_name.begin(), ::tolower);
 
-                    if (!op.op->return_type.type().count("ARRAY") && !op.op->arg_type.type().count("ARRAY")) {
+                    std::regex spaces_regex = std::regex("[^a-zA-Z0-9]");
+                    std::string arg_name;
+                    if ((uintptr_t)op.arg_name > 256) {
+                        arg_name = std::string(op.arg_name);
+                    }
+                    else {
+                        arg_name = "arg";
+                    }
+                    std::string snake_arg = std::regex_replace(arg_name, to_snake, "$1_$2");
+                    snake_arg = std::regex_replace(snake_arg, spaces_regex, "$1_$2");
+                    std::transform(snake_arg.begin(), snake_arg.end(), snake_arg.begin(), ::tolower);
+                    snake_arg += "_";
 
-                        if (pretty_name == "true" || pretty_name == "false")
-                            continue;
+                    if (!op.op->return_type.type().count("ARRAY") && 
+                        (op.op->arg_type.type().size() == 1 || op.op->arg_type.type().count("NaN")) && 
+                        !op.op->arg_type.type().count("ARRAY")
+                        ) 
+                    {
+                        std::string return_type = *op.op->return_type.type().begin();
+                        if (return_type == "NaN")
+                            return_type = "SCALAR";
 
+                        std::string arg_type = *op.op->arg_type.type().begin();
+                        if (arg_type == "NaN")
+                            arg_type = "SCALAR";
 
-                        std::string macro_name = "SIMPLE_NULAR_FUNC_" + op.op->return_type.type_str();
+                        std::string macro_name = "SIMPLE_UNARY_FUNC_" + return_type + "_" + arg_type;
                         unary_macros.insert(macro_name);
-                        macro_name += "(__sqf::" + pointer_name + "," + snake_name + ")";
+                        macro_name += "(__sqf::" + pointer_name + ", " + snake_name + ", " + snake_arg + ")";
                         simple_unary << macro_name << "\n";
                     }
                     else {
-                        if (pretty_name == "true" || pretty_name == "false")
-                            continue;
-                        complex_unary << "// ptr: __sqf::" << pointer_name << "\n";
-                        complex_unary << return_type << " " << snake_name << "();\n\n";
+                        for (auto arg_type : op.op->arg_type.type()) {
+                            std::transform(arg_type.begin(), arg_type.end(), arg_type.begin(), ::tolower);
+                            if (arg_type == "string") {
+                                arg_type = "std::string";
+                            }
+                            else if(arg_type == "scalar") {
+                                arg_type = "float";
+                            }
+                            complex_unary << "// ptr: __sqf::" << pointer_name << "\n";
+                            complex_unary << return_type << " " << snake_name << "(" + arg_type + " " + snake_arg + ");\n\n";
+                        }
                     }
-                    */
+                    
                 }
             }
         }
+
+        simple_unary << "\n\n/*\n";
+        for (auto macro : unary_macros) {
+            simple_unary << "#define " << macro << "(ptr, fnc, var)\n";
+        }
+        simple_unary << "*/";
 
         pointers << "\n// Binary Functions\n";
         assignments << "\n// Binary Functions\n";
@@ -151,6 +184,11 @@ namespace intercept {
             sorted_binary_list.push_back(binary.first);
         };
         sorted_binary_list.sort();
+
+        std::ofstream simple_binary("sqf_simple_binary.hpp");
+        std::ofstream complex_binary("sqf_complex_binary.hpp");
+
+        std::set<std::string> binary_macros;
 
         for (auto binary_entry : sorted_binary_list) {
             std::string op_name = binary_entry;
@@ -173,9 +211,93 @@ namespace intercept {
 
                     assignments << "__sqf::" << pointer_name << " = " << "(binary_function)functions.get_binary_function_typed(\"" << op_name << 
                         "\", \"" << first_arg1_type << "\", \"" << first_arg2_type << "\");\n";
+
+                    std::string pretty_name(op.name);
+                    std::regex to_snake = std::regex("([a-z])([A-Z0-9])");
+                    std::string snake_name = std::regex_replace(pretty_name, to_snake, "$1_$2");
+                    std::transform(snake_name.begin(), snake_name.end(), snake_name.begin(), ::tolower);
+
+                    std::regex spaces_regex = std::regex("[^a-zA-Z0-9]");
+                    std::string arg1_name;
+                    if ((uintptr_t)op.left_arg_name > 256) {
+                        arg1_name = std::string(op.left_arg_name);
+                    }
+                    else {
+                        arg1_name = "arg1";
+                    }
+                    std::string snake_arg1 = std::regex_replace(arg1_name, to_snake, "$1_$2");
+                    snake_arg1 = std::regex_replace(snake_arg1, spaces_regex, "$1_$2");
+                    std::transform(snake_arg1.begin(), snake_arg1.end(), snake_arg1.begin(), ::tolower);
+                    snake_arg1 += "_";
+
+                    std::string arg2_name;
+                    if ((uintptr_t)op.right_arg_name > 256) {
+                        arg2_name = std::string(op.right_arg_name);
+                    }
+                    else {
+                        arg2_name = "arg2";
+                    }
+                    std::string snake_arg2 = std::regex_replace(arg2_name, to_snake, "$1_$2");
+                    snake_arg2 = std::regex_replace(snake_arg2, spaces_regex, "$1_$2");
+                    std::transform(snake_arg2.begin(), snake_arg2.end(), snake_arg2.begin(), ::tolower);
+                    snake_arg2 += "_";
+
+                    if (!op.op->return_type.type().count("ARRAY") &&
+                        ((op.op->arg1_type.type().size() == 1 || op.op->arg1_type.type().count("NaN")) &&
+                        !op.op->arg1_type.type().count("ARRAY")) &&
+                        ((op.op->arg2_type.type().size() == 1 || op.op->arg2_type.type().count("NaN")) &&
+                            !op.op->arg2_type.type().count("ARRAY"))
+                        )
+                    {
+                        std::string return_type = *op.op->return_type.type().begin();
+                        if (return_type == "NaN")
+                            return_type = "SCALAR";
+
+                        std::string arg1_type = *op.op->arg1_type.type().begin();
+                        if (arg1_type == "NaN")
+                            arg1_type = "SCALAR";
+
+                        std::string arg2_type = *op.op->arg2_type.type().begin();
+                        if (arg2_type == "NaN")
+                            arg2_type = "SCALAR";
+
+
+                        std::string macro_name = "SIMPLE_BINARY_FUNC_" + return_type + "_" + arg1_type + "_" + arg2_type;
+                        binary_macros.insert(macro_name);
+                        macro_name += "(__sqf::" + pointer_name + ", " + snake_name + ", " + snake_arg1 + ", " + snake_arg2 + ")";
+                        simple_binary << macro_name << "\n";
+                    }
+                    else {
+                        for (auto arg1_type : op.op->arg1_type.type()) {
+                            std::transform(arg1_type.begin(), arg1_type.end(), arg1_type.begin(), ::tolower);
+                            if (arg1_type == "string") {
+                                arg1_type = "std::string";
+                            }
+                            else if (arg1_type == "scalar") {
+                                arg1_type = "float";
+                            }
+                            for (auto arg2_type : op.op->arg2_type.type()) {
+                                std::transform(arg2_type.begin(), arg2_type.end(), arg2_type.begin(), ::tolower);
+                                if (arg2_type == "string") {
+                                    arg2_type = "std::string";
+                                }
+                                else if (arg2_type == "scalar") {
+                                    arg2_type = "float";
+                                }
+                                complex_binary << "// ptr: __sqf::" << pointer_name << "\n";
+                                complex_binary << return_type << " " << snake_name << "(" + arg1_type + " " + snake_arg1 + ", " + arg2_type + " " + snake_arg2 + ");\n\n";
+                            }
+                        }
+                    }
                 }
             }
         }
+
+        simple_binary << "\n\n/*\n";
+        for (auto macro : binary_macros) {
+            simple_binary << "#define " << macro << "(ptr, fnc, arg1, arg2)\n";
+        }
+        simple_binary << "*/";
 
         pointers << "\n// Nular Functions\n";
         assignments << "\n// Nular Functions\n";
@@ -215,7 +337,7 @@ namespace intercept {
                         
                         std::string macro_name = "SIMPLE_NULAR_FUNC_" + op.op->return_type.type_str();
                         nular_macros.insert(macro_name);
-                        macro_name += "(__sqf::" + pointer_name + "," + snake_name + ")";
+                        macro_name += "(__sqf::" + pointer_name + ", " + snake_name + ")";
                         simple_nulars << macro_name << "\n";
                     }
                     else {
@@ -230,7 +352,7 @@ namespace intercept {
 
         simple_nulars << "\n\n/*\n";
         for (auto macro : nular_macros) {
-            simple_nulars << "#define " << macro << "(ptr,fnc)\n";
+            simple_nulars << "#define " << macro << "(ptr, fnc)\n";
         }
         simple_nulars << "*/";
         ExitProcess(0);

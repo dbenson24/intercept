@@ -296,9 +296,11 @@ namespace intercept {
                     uintptr_t entry = (op_start + (44 * op_offset));
                     unary_entry new_entry;
                     new_entry.op = (unary_operator *)*(uintptr_t *)(entry + 12);
-
                     uintptr_t name_entry = *(uintptr_t *)entry;
                     new_entry.name = (char *)(name_entry + 8);
+                    uintptr_t right_entry = *(uintptr_t *)(entry + 16);
+                    new_entry.arg_name = (char *)(right_entry + 8);
+
                     LOG(INFO) << "Found unary operator: " <<
                         new_entry.op->return_type.type_str() << " " <<
                         new_entry.name <<
@@ -334,6 +336,10 @@ namespace intercept {
                     new_entry.op = (binary_operator *)*(uintptr_t *)(entry + 16);
                     uintptr_t name_entry = *(uintptr_t *)entry;
                     new_entry.name = (char *)(name_entry + 8);
+                    uintptr_t left_entry = *(uintptr_t *)(entry + 20);
+                    uintptr_t right_entry = *(uintptr_t *)(entry + 24);
+                    new_entry.left_arg_name = (char *)(left_entry + 8);
+                    new_entry.right_arg_name = (char *)(right_entry + 8);
                     LOG(INFO) << "Found binary operator: " <<
                         new_entry.op->return_type.type_str() << " " <<
                         "(" << new_entry.op->arg1_type.type_str() << ")" <<

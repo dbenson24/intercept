@@ -53,6 +53,7 @@ namespace intercept {
         struct unary_entry {
             char *name;
             unary_operator *op;
+            char *arg_name;
         };
 
         struct binary_operator {
@@ -67,6 +68,8 @@ namespace intercept {
         struct binary_entry {
             char *name;
             binary_operator *op;
+            char *left_arg_name;
+            char *right_arg_name;
         };
 
         struct nular_operator {
