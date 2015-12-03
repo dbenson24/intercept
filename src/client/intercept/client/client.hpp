@@ -2,9 +2,7 @@
 #include "../shared.hpp"
 #include "shared\functions.hpp"
 #include "client_types.hpp"
-
-
-
+#include "vector.hpp"
 
 #define DLLEXPORT __declspec(dllexport)
 using namespace intercept::client::types;
@@ -22,5 +20,8 @@ namespace intercept {
         float random(float max_);
         object player();
         void side_chat(object obj_, const std::string &message_);
+        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_);
+        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_);
+        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_);
     }
 }

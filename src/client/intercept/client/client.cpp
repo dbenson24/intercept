@@ -1,7 +1,6 @@
 #include "client.hpp"
 #include "pointers.hpp"
 #include "client_types.hpp"
-#include "vector.hpp"
 
 intercept::client_functions functions;
 using namespace intercept::rv_types;
@@ -40,7 +39,7 @@ namespace intercept {
         }
 
         
-        bool line_intersects(vector3<double> beginPosition_, vector3<double> endPosition_) {
+        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_) {
             game_value beginPos = functions.new_array(size_t(3));
             ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
             ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
@@ -62,7 +61,7 @@ namespace intercept {
             return intersects;
         }
 
-        bool line_intersects(vector3<double> beginPosition_, vector3<double> endPosition_, const object& ignore_obj_one_) {
+        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_) {
             game_value beginPos = functions.new_array(size_t(3));
             ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
             ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
@@ -85,7 +84,7 @@ namespace intercept {
             return intersects;
         }
 
-        bool line_intersects(vector3<double> beginPosition_, vector3<double> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_) {
+        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_) {
             
             game_value beginPos = functions.new_array(size_t(3));
             ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
