@@ -11,49 +11,59 @@ namespace intercept {
             template<typename T>
             class vector3 {
             public:
-                vector3() :
-                    _x(0),
-                    _y(0),
-                    _z(0) {
+
+				T x;
+				T y;
+				T z;
+
+                vector3()
+				{
+					x = 0;
+					y = 0;
+					z = 0;
+				}
+
+                vector3(const T x_, const T y_, const T z_)
+				{
+					x = x_;
+					y = y_;
+					z = z_;
                 }
-                vector3(const T x_, const T y_, const T z_) :
-                    _x(x_),
-                    _y(y_),
-                    _z(z_) {
-                }
+
                 vector3(std::istream & read_) {
                     // Constructor to read from a stream
-                    read_.read((char *)&_x, sizeof(T));
-                    read_.read((char *)&_y, sizeof(T));
-                    read_.read((char *)&_z, sizeof(T));
+                    read_.read((char *)&x, sizeof(T));
+                    read_.read((char *)&y, sizeof(T));
+                    read_.read((char *)&z, sizeof(T));
                 }
+
                 vector3(const float *buffer) {
-                    _x = buffer[0];
-                    _y = buffer[1];
-                    _z = buffer[2];
+                    x = buffer[0];
+                    y = buffer[1];
+                    z = buffer[2];
                 }
 
-                vector3<T> & operator= (const vector3<T>& other) { _x = other.x(); _y = other.y(); _z = other.z(); return *this; }
-                vector3 operator * (const T &val) const { return vector3(_x * val, _y * val, _z * val); }
-                vector3 operator / (const T &val) const { T invVal = T(1) / val; return vector3(_x * invVal, _y * invVal, _z * invVal); }
-                vector3 operator + (const vector3<T> &v) const { return vector3(_x + v.x(), _y + v.y(), _z + v.z()); }
-                vector3 operator / (const vector3 &v) const { return vector3(_x / v.x(), _y / v.y(), _z / v.z()); }
-                vector3 operator * (const vector3 &v) const { return vector3(_x * v.x(), _y * v.y(), _z * v.z()); }
-                vector3 operator - (const vector3 &v) const { return vector3(_x - v.x(), _y - v.y(), _z - v.z()); }
-                vector3 operator - () const { return vector3(-_x, -_y, -_z); }
+                vector3<T> & operator= (const vector3<T>& other) { x = other.x; y = other.x; z = other.x; return *this; }
+                vector3 operator * (const T &val) const { return vector3(x * val, y * val, z * val); }
+                vector3 operator / (const T &val) const { T invVal = T(1) / val; return vector3(x * invVal, y * invVal, z * invVal); }
+                vector3 operator + (const vector3<T> &v) const { return vector3(x + v.x, y + v.x, z + v.x); }
+                vector3 operator / (const vector3 &v) const { return vector3(x / v.x, y / v.x, z / v.x); }
+                vector3 operator * (const vector3 &v) const { return vector3(x * v.x, y * v.x, z * v.x); }
+                vector3 operator - (const vector3 &v) const { return vector3(x - v.x, y - v.x, z - v.x); }
+                vector3 operator - () const { return vector3(-x, -y, -z); }
 
-                bool operator == (const vector3 &r) const { return (_x == r.x() && _y == r.y() && _z == r.z()); }
+                bool operator == (const vector3 &r) const { return (x == r.x && y == r.x && z == r.x); }
                 bool operator >  (const vector3 &r) const { throw 1; }
                 bool operator <  (const vector3 &r) const { throw 1; }
                 bool operator <= (const vector3 &r) const { throw 1; }
                 bool operator >= (const vector3 &r) const { throw 1; }
 
-                T magnitude() const { return sqrt(_x * _x + _y * _y + _z * _z); }
-                T dot(const vector3 &v) const { return (_x * v.x() + _y * v.y() + _z * v.z()); }
-                T distance(const vector3 &v) const { vector3 dist = (*this - v); dist = dist * dist; return sqrt(dist.x() + dist.y() + dist.z()); }
-                vector3 cross(const vector3 &v) const { return vector3(_y * v.z() - _z * v.y(), _z * v.x() - _x * v.z(), _x * v.y() - _y * v.x()); }
+                T magnitude() const { return sqrt(x * x + y * y + z * z); }
+                T dot(const vector3 &v) const { return (x * v.x + y * v.x + z * v.x); }
+                T distance(const vector3 &v) const { vector3 dist = (*this - v); dist = dist * dist; return sqrt(dist.x + dist.x + dist.x); }
+                vector3 cross(const vector3 &v) const { return vector3(y * v.x - z * v.x, z * v.x - x * v.x, x * v.x - y * v.x); }
                 vector3 normalize(void) const { return (*this / abs(magnitude())); };
-                bool zero_distance() { return ((_x == 0.0f && _y == 0.0f && _z == 0.0f) ? true : false); }
+                bool zero_distance() { return ((x == 0.0f && y == 0.0f && z == 0.0f) ? true : false); }
 
                 static float clamp(T x, T a, T b) { return x < a ? a : (x > b ? b : x); }
 
@@ -69,24 +79,83 @@ namespace intercept {
                     relative.normalize();
                     return ((start * cos(theta)) + (relative*sin(theta)));
                 }
-                vector3 slerp(const vector3& B, const T p) {
-                    return vector3::slerp(*this, B, p);
-                }
-
-                const T & x() const { return _x; }
-                const T & y() const { return _y; }
-                const T & z() const { return _z; }
-
-                void x(const T val) { _x = val; }
-                void y(const T val) { _y = val; }
-                void z(const T val) { _z = val; }
-            protected:
-                T _x;
-                T _y;
-                T _z;
+				vector3 slerp(const vector3& B, const T p) {
+					return vector3::slerp(*this, B, p);
+				}
             };
 
+			template<typename T>
+			class vector2 {
+			public:
+
+				T x;
+				T y;
+
+				vector2()
+				{
+					x = 0;
+					y = 0;
+				}
+
+				vector2(const T x_, const T y_)
+				{
+					x = x_;
+					y = y_;
+				}
+
+				vector2(std::istream & read_) {
+					// Constructor to read from a stream
+					read_.read((char *)&x, sizeof(T));
+					read_.read((char *)&y, sizeof(T));
+				}
+				vector2(const float *buffer) {
+					x = buffer[0];
+					y = buffer[1];
+				}
+
+				vector2<T> & operator= (const vector2<T>& other) { x = other.x; y = other.y; return *this; }
+				vector2 operator * (const T &val) const { return vector2(x * val, y * val); }
+				vector2 operator / (const T &val) const { T invVal = T(1) / val; return vector2(x * invVal, y * invVal); }
+				vector2 operator + (const vector2<T> &v) const { return vector2(x + v.x, y + v.y); }
+				vector2 operator / (const vector2 &v) const { return vector2(x / v.x, y / v.y); }
+				vector2 operator * (const vector2 &v) const { return vector2(x * v.x, y * v.y); }
+				vector2 operator - (const vector2 &v) const { return vector2(x - v.x, y - v.y); }
+				vector2 operator - () const { return vector2(-x, -y); }
+
+				bool operator == (const vector2 &r) const { return (x == r.x && y == r.y); }
+				bool operator >  (const vector2 &r) const { throw 1; }
+				bool operator <  (const vector2 &r) const { throw 1; }
+				bool operator <= (const vector2 &r) const { throw 1; }
+				bool operator >= (const vector2 &r) const { throw 1; }
+
+				T magnitude() const { return sqrt(x * x + y * y); }
+				T dot(const vector2 &v) const { return (x * v.x() + y * v.y()); }
+				T distance(const vector2 &v) const { vector2 dist = (*this - v); dist = dist * dist; return sqrt(dist.x + dist.y); }
+				vector2 cross(const vector2 &v) const { return vector2(v.y, -v.x); }
+				vector2 normalize(void) const { return (*this / abs(magnitude())); };
+				bool zero_distance() { return ((x == 0.0f && y == 0.0f) ? true : false); }
+
+				static float clamp(T x, T a, T b) { return x < a ? a : (x > b ? b : x); }
+
+				static vector2 lerp(const vector2& A, const vector2& B, const T t) { return A*t + B*(1.f - t); }
+				vector2 lerp(const vector2& B, const T t) { return vector2::lerp(*this, B, t); }
+
+				static vector2 slerp(vector2 start, vector2 end, T percent) {
+					T dot = start.dot(end);
+					dot = vector2::clamp(dot, -1.0f, 1.0f);
+
+					T theta = acos(dot) * percent;
+					vector2 relative = end - start*dot;
+					relative.normalize();
+					return ((start * cos(theta)) + (relative*sin(theta)));
+				}
+				vector2 slerp(const vector2& B, const T p) {
+					return vector2::slerp(*this, B, p);
+				}
+			};
+
             typedef vector3<float> vector;
+			typedef vector2<float> vector2d;
         }
     }
 }
