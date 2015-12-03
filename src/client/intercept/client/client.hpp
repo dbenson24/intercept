@@ -1,9 +1,11 @@
+/**
+ * @file
+ * @brief Client C++ API functionality
+*/
 #pragma once
 #include "../shared.hpp"
 #include "shared\functions.hpp"
 #include "client_types.hpp"
-
-
 
 
 #define DLLEXPORT __declspec(dllexport)

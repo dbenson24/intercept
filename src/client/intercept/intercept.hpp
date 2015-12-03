@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief Client C99 API functionality
+*/
 #pragma once
 #include "shared.hpp"
 #include "client\client.hpp"
