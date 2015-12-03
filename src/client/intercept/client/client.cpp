@@ -1,6 +1,7 @@
 #include "client.hpp"
 #include "pointers.hpp"
 #include "client_types.hpp"
+#include <vector>
 
 intercept::client_functions functions;
 using namespace intercept::rv_types;
@@ -39,16 +40,9 @@ namespace intercept {
         }
 
         
-        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_) {
-            game_value beginPos = functions.new_array(size_t(3));
-            ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
-            ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
-            ((game_data_number *)beginPos.data)[2] = (game_data_number &)functions.new_scalar(beginPosition_.z);
-
-            game_value endPos = functions.new_array(size_t(3));
-            ((game_data_number *)endPos.data)[0] = (game_data_number &)functions.new_scalar(endPosition_.x);
-            ((game_data_number *)endPos.data)[1] = (game_data_number &)functions.new_scalar(endPosition_.y);
-            ((game_data_number *)endPos.data)[2] = (game_data_number &)functions.new_scalar(endPosition_.z);
+        bool line_intersects(vector3_base<float> beginPosition_, vector3_base<float> endPosition_) {
+            STACK_3DARRAY(beginPos, beginPosition_);
+            STACK_3DARRAY(endPos, endPosition_);
 
             game_value array_input = functions.new_array(size_t(2));
             ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
@@ -61,16 +55,9 @@ namespace intercept {
             return intersects;
         }
 
-        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_) {
-            game_value beginPos = functions.new_array(size_t(3));
-            ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
-            ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
-            ((game_data_number *)beginPos.data)[2] = (game_data_number &)functions.new_scalar(beginPosition_.z);
-
-            game_value endPos = functions.new_array(size_t(3));
-            ((game_data_number *)endPos.data)[0] = (game_data_number &)functions.new_scalar(endPosition_.x);
-            ((game_data_number *)endPos.data)[1] = (game_data_number &)functions.new_scalar(endPosition_.y);
-            ((game_data_number *)endPos.data)[2] = (game_data_number &)functions.new_scalar(endPosition_.z);
+        bool line_intersects(vector3_base<float> beginPosition_, vector3_base<float> endPosition_, const object& ignore_obj_one_) {
+            STACK_3DARRAY(beginPos, beginPosition_);
+            STACK_3DARRAY(endPos, endPosition_);
 
             game_value array_input = functions.new_array(size_t(3));
             ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
@@ -84,17 +71,9 @@ namespace intercept {
             return intersects;
         }
 
-        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_) {
-            
-            game_value beginPos = functions.new_array(size_t(3));
-            ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
-            ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
-            ((game_data_number *)beginPos.data)[2] = (game_data_number &)functions.new_scalar(beginPosition_.z);
-
-            game_value endPos = functions.new_array(size_t(3));
-            ((game_data_number *)endPos.data)[0] = (game_data_number &)functions.new_scalar(endPosition_.x);
-            ((game_data_number *)endPos.data)[1] = (game_data_number &)functions.new_scalar(endPosition_.y);
-            ((game_data_number *)endPos.data)[2] = (game_data_number &)functions.new_scalar(endPosition_.z);
+        bool line_intersects(vector3_base<float> beginPosition_, vector3_base<float> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_) {            
+            STACK_3DARRAY(beginPos, beginPosition_);
+            STACK_3DARRAY(endPos, endPosition_);
 
             game_value array_input = functions.new_array(size_t(4));
             ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
@@ -106,7 +85,31 @@ namespace intercept {
             bool intersects = ((game_data_bool *)intersects_value.data)->val;
             functions.free_value(&intersects_value);
             functions.free_value(&array_input);
+            //functions.free_value(&beginPos);
+            //functions.free_value(&endPos);
             return intersects;
+        }
+
+        void line_intersects_objs(vector3 beginPosition_, vector3 endPosition_, const object& withObj_, const object& ignoreObj_, bool sortByDistance_, int flags_) {
+            STACK_3DARRAY(beginPos, beginPosition_);
+            STACK_3DARRAY(endPos, endPosition_);
+            STACK_SCALAR(flags, flags_);
+            STACK_BOOL(stortByDistance, sortByDistance_);
+
+            game_value array_input = functions.new_array(size_t(6));
+            ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
+            ((game_data_array *)array_input.data)[1] = (game_data_array &)endPos;
+            ((game_data_object *)array_input.data)[2] = (game_data_object &)(withObj_->rv_obj.data);
+            ((game_data_object *)array_input.data)[3] = (game_data_object &)(ignoreObj_->rv_obj.data);
+            ((game_data_bool *)array_input.data)[4] = (game_data_object &)stortByDistance;
+            ((game_data_number *)array_input.data)[5] = (game_data_number &)flags;
+
+            game_value intersects_value = functions.invoke_raw_unary(client::__sqf::unary__lineintersectsobjs__array__ret__array, &array_input);
+            game_data_array* intersects = ((game_data_array *)intersects_value.data);
+  
+            // std::array requires us to know the exact length at compile time. So use vector instead?
+            // std::vector<game_data_object> arr(intersects->length);
+            
         }
 
     }

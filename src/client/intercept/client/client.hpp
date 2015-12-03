@@ -20,8 +20,8 @@ namespace intercept {
         float random(float max_);
         object player();
         void side_chat(object obj_, const std::string &message_);
-        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_);
-        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_);
-        bool line_intersects(vector3_base<double> beginPosition_, vector3_base<double> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_);
+        bool line_intersects(vector3_base<float> beginPosition_, vector3_base<float> endPosition_);
+        bool line_intersects(vector3_base<float> beginPosition_, vector3_base<float> endPosition_, const object& ignore_obj_one_);
+        bool line_intersects(vector3_base<float> beginPosition_, vector3_base<float> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_);
     }
 }
