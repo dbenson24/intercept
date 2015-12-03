@@ -1,6 +1,8 @@
 #include "client.hpp"
 #include "pointers.hpp"
 #include "client_types.hpp"
+#include "vector.hpp"
+
 intercept::client_functions functions;
 using namespace intercept::rv_types;
 namespace intercept {
@@ -35,6 +37,77 @@ namespace intercept {
             game_value message = functions.new_string(message_.c_str());
             functions.invoke_raw_binary(client::__sqf::binary__sidechat__object_array__string__ret__nothing, &obj_->rv_obj, &message);
             functions.free_value(&message);
+        }
+
+        
+        bool line_intersects(vector3<double> beginPosition_, vector3<double> endPosition_) {
+            game_value beginPos = functions.new_array(size_t(3));
+            ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
+            ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
+            ((game_data_number *)beginPos.data)[2] = (game_data_number &)functions.new_scalar(beginPosition_.z);
+
+            game_value endPos = functions.new_array(size_t(3));
+            ((game_data_number *)endPos.data)[0] = (game_data_number &)functions.new_scalar(endPosition_.x);
+            ((game_data_number *)endPos.data)[1] = (game_data_number &)functions.new_scalar(endPosition_.y);
+            ((game_data_number *)endPos.data)[2] = (game_data_number &)functions.new_scalar(endPosition_.z);
+
+            game_value array_input = functions.new_array(size_t(2));
+            ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
+            ((game_data_array *)array_input.data)[1] = (game_data_array &)endPos;
+
+            game_value intersects_value = functions.invoke_raw_unary(client::__sqf::unary__lineintersects__array__ret__bool, &array_input);
+            bool intersects = ((game_data_bool *)intersects_value.data)->val;
+            functions.free_value(&intersects_value);
+            functions.free_value(&array_input);
+            return intersects;
+        }
+
+        bool line_intersects(vector3<double> beginPosition_, vector3<double> endPosition_, const object& ignore_obj_one_) {
+            game_value beginPos = functions.new_array(size_t(3));
+            ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
+            ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
+            ((game_data_number *)beginPos.data)[2] = (game_data_number &)functions.new_scalar(beginPosition_.z);
+
+            game_value endPos = functions.new_array(size_t(3));
+            ((game_data_number *)endPos.data)[0] = (game_data_number &)functions.new_scalar(endPosition_.x);
+            ((game_data_number *)endPos.data)[1] = (game_data_number &)functions.new_scalar(endPosition_.y);
+            ((game_data_number *)endPos.data)[2] = (game_data_number &)functions.new_scalar(endPosition_.z);
+
+            game_value array_input = functions.new_array(size_t(3));
+            ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
+            ((game_data_array *)array_input.data)[1] = (game_data_array &)endPos;
+            ((game_data_object *)array_input.data)[2] = (game_data_object &)(ignore_obj_one_->rv_obj.data);
+
+            game_value intersects_value = functions.invoke_raw_unary(client::__sqf::unary__lineintersects__array__ret__bool, &array_input);
+            bool intersects = ((game_data_bool *)intersects_value.data)->val;
+            functions.free_value(&intersects_value);
+            functions.free_value(&array_input);
+            return intersects;
+        }
+
+        bool line_intersects(vector3<double> beginPosition_, vector3<double> endPosition_, const object& ignore_obj_one_, const object& ignore_obj_two_) {
+            
+            game_value beginPos = functions.new_array(size_t(3));
+            ((game_data_number *)beginPos.data)[0] = (game_data_number &)functions.new_scalar(beginPosition_.x);
+            ((game_data_number *)beginPos.data)[1] = (game_data_number &)functions.new_scalar(beginPosition_.y);
+            ((game_data_number *)beginPos.data)[2] = (game_data_number &)functions.new_scalar(beginPosition_.z);
+
+            game_value endPos = functions.new_array(size_t(3));
+            ((game_data_number *)endPos.data)[0] = (game_data_number &)functions.new_scalar(endPosition_.x);
+            ((game_data_number *)endPos.data)[1] = (game_data_number &)functions.new_scalar(endPosition_.y);
+            ((game_data_number *)endPos.data)[2] = (game_data_number &)functions.new_scalar(endPosition_.z);
+
+            game_value array_input = functions.new_array(size_t(4));
+            ((game_data_array *)array_input.data)[0] = (game_data_array &)beginPos;
+            ((game_data_array *)array_input.data)[1] = (game_data_array &)endPos;
+            ((game_data_object *)array_input.data)[2] = (game_data_object &)(ignore_obj_one_->rv_obj.data);
+            ((game_data_object *)array_input.data)[3] = (game_data_object &)(ignore_obj_two_->rv_obj.data);
+            
+            game_value intersects_value = functions.invoke_raw_unary(client::__sqf::unary__lineintersects__array__ret__bool, &array_input);
+            bool intersects = ((game_data_bool *)intersects_value.data)->val;
+            functions.free_value(&intersects_value);
+            functions.free_value(&array_input);
+            return intersects;
         }
 
     }
