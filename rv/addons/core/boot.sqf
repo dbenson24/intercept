@@ -47,3 +47,5 @@ if(_res == "ceil") then {
     "intercept" callExtension "invoker_end_register:";
 };
 diag_log text format["_________________________________________Intercept Res: %1", _res];
+_version = format["%1 %2.%3 - %4", (productVersion select 0), (productVersion select 2), (productVersion select 3), (productVersion select 4)];
+"intercept" callExtension ("export_ptr_list:" + _version);

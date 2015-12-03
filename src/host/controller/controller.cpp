@@ -95,6 +95,11 @@ namespace intercept {
         };
         sorted_unary_list.sort();
 
+        std::ofstream simple_unary("sqf_simple_unary.hpp");
+        std::ofstream complex_unary("sqf_complex_unary.hpp");
+
+        std::set<std::string> unary_macros;
+
         for (auto unary_entry : sorted_unary_list) {
             std::string op_name = unary_entry;
             std::regex name_test = std::regex("[a-z]+?.*");
@@ -109,6 +114,30 @@ namespace intercept {
                     pointers << "unary_function " << pointer_name << ";\n";
                     //__sqf::unary_random_scalar_raw = (unary_function)functions.get_unary_function_typed("random", "SCALAR");
                     assignments << "__sqf::" << pointer_name << " = " << "(unary_function)functions.get_unary_function_typed(\"" << op_name << "\", \"" << first_arg_type << "\");\n";
+                    /*
+                    std::string pretty_name(op.name);
+                    std::regex to_snake = std::regex("([a-z])([A-Z0-9])");
+                    std::string snake_name = std::regex_replace(pretty_name, to_snake, "$1_$2");
+                    std::transform(snake_name.begin(), snake_name.end(), snake_name.begin(), ::tolower);
+
+                    if (!op.op->return_type.type().count("ARRAY") && !op.op->arg_type.type().count("ARRAY")) {
+
+                        if (pretty_name == "true" || pretty_name == "false")
+                            continue;
+
+
+                        std::string macro_name = "SIMPLE_NULAR_FUNC_" + op.op->return_type.type_str();
+                        unary_macros.insert(macro_name);
+                        macro_name += "(__sqf::" + pointer_name + "," + snake_name + ")";
+                        simple_unary << macro_name << "\n";
+                    }
+                    else {
+                        if (pretty_name == "true" || pretty_name == "false")
+                            continue;
+                        complex_unary << "// ptr: __sqf::" << pointer_name << "\n";
+                        complex_unary << return_type << " " << snake_name << "();\n\n";
+                    }
+                    */
                 }
             }
         }
@@ -158,6 +187,10 @@ namespace intercept {
         };
         sorted_nular_list.sort();
 
+        std::ofstream simple_nulars("sqf_simple_nular.hpp");
+        std::ofstream complex_nulars("sqf_complex_nular.hpp");
+
+        std::set<std::string> nular_macros;
         for (auto nular_entry : sorted_nular_list) {
             std::string op_name = nular_entry;
             std::regex name_test = std::regex("[a-z]+?.*");
@@ -167,12 +200,40 @@ namespace intercept {
                     std::transform(return_type.begin(), return_type.end(), return_type.begin(), ::tolower);
                     std::string pointer_name = "nular__" + op_name + "__ret__" + return_type;
                     pointers << "nular_function " << pointer_name << ";\n";
-                    //__sqf::unary_random_scalar_raw = (unary_function)functions.get_unary_function_typed("random", "SCALAR");
                     assignments << "__sqf::" << pointer_name << " = " << "(nular_function)functions.get_nular_function(\"" << op_name << "\");\n";
+
+                    std::string pretty_name(op.name);
+                    std::regex to_snake = std::regex("([a-z])([A-Z0-9])");
+                    std::string snake_name = std::regex_replace(pretty_name, to_snake, "$1_$2");
+                    std::transform(snake_name.begin(), snake_name.end(), snake_name.begin(), ::tolower);
+
+                    if (op.op->return_type.type_str() != "ARRAY" && op.op->return_type.type_str() != "NetObject") {
+                        
+                        if (pretty_name == "true" || pretty_name == "false")
+                            continue;
+                        
+                        
+                        std::string macro_name = "SIMPLE_NULAR_FUNC_" + op.op->return_type.type_str();
+                        nular_macros.insert(macro_name);
+                        macro_name += "(__sqf::" + pointer_name + "," + snake_name + ")";
+                        simple_nulars << macro_name << "\n";
+                    }
+                    else {
+                        if (pretty_name == "true" || pretty_name == "false")
+                            continue;
+                        complex_nulars << "// ptr: __sqf::" << pointer_name << "\n";
+                        complex_nulars << return_type << " " << snake_name << "();\n\n";
+                    }
                 }
             }
         }
 
+        simple_nulars << "\n\n/*\n";
+        for (auto macro : nular_macros) {
+            simple_nulars << "#define " << macro << "(ptr,fnc)\n";
+        }
+        simple_nulars << "*/";
+        ExitProcess(0);
         return true;
     }
 }
